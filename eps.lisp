@@ -3,8 +3,6 @@
 
 ;; See: https://link.springer.com/article/10.1007/BF01806176
 
-(defpackage :eps (:use :cl))
-
 (in-package :eps)
 
 (setq expanders '())
@@ -22,7 +20,7 @@
   (cond
     ((or (atom form) (symbolp form) (consp form)) form)
     ((expanderp (car form))
-     ((expander-function (car form)) form expander))
+     (apply (expander-function (car form)) form expander))
     (t (mapcar (lambda (form) (expander form expander)) form))))
 
 
@@ -85,5 +83,4 @@
 ;;           `((lambda ,(mapcar car decls) ,@body)
 ;;             ,@ (map cadr decls))))
 
-
-(expand '(if x (quote 1) 2))
+;; (expand '(if x (quote 1) 2))
