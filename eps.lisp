@@ -5,22 +5,32 @@
 
 (in-package :eps)
 
-(setq expanders '())
+(defparameter *expanders* (make-hash-table :test 'eq))
 
 (defun expanderp (symbol)
-  (assoc symbol expanders))
+  (if (gethash symbol *expanders*) t nil))
 
 (defun expander-function (symbol)
-  (cdr (assoc symbol expanders)))
+  (gethash symbol *expanders*))
 
 (defun install-expander (symbol expander-fn)
-  (setq expanders (cons (cons symbol expander-fn) expanders)))
+  (setf (gethash symbol *expanders*) expander-fn))
+
+(defun apply-expander-function (expander-fn form expander)
+  (apply expander-fn from expander))
+
+(defun variablep (x)
+  (and (not (expanderp x)) (symbolp x)))
+
+(defun literalp (form)
+  (or (numberp form) (stringp form) (consp form)))
 
 (defun initial-expander (form expander)
   (cond
-    ((or (atom form) (symbolp form) (consp form)) form)
+    ((or (variablep form) (literalp form)) form)
     ((expanderp (car form))
-     (apply (expander-function (car form)) form expander))
+     (apply-expander-function
+      (expander-function (car form)) form expander))
     (t (mapcar (lambda (form) (expander form expander)) form))))
 
 
